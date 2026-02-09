@@ -1,0 +1,15 @@
+{
+    "components": [
+        {
+            "id": "dcChartPlugin",
+            "type": "VIEW_PLUGIN",
+            "allowMultipleInstances": false,
+            "name": "sap.dm.custom.plugin.dcchartext.dcchartext",
+            "propertyEditor": "sap.dm.custom.plugin.dcchartext.dcchartext.builder.PropertyEditor",
+            "i18n": "sap.dm.custom.plugin.dcchartext.dcchartext.i18n.i18n",
+            "productionProcessEnabled": true,
+            "productionProcessTitle": "DC Chart Plugin",
+            "supportedPodTypes": ["WORK_CENTER", "OPERATION", "ORDER", "OTHER", "MONITOR"]
+        }
+    ]
+}

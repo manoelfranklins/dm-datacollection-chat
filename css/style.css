@@ -1,0 +1,244 @@
+/* Data Collection Chart Extension Styles */
+
+/* Chart Container */
+.dcChartContainer {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+/* Info Bar */
+.dcChartInfoBar {
+    background-color: #f7f7f7;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    border-left: 4px solid #0854A0;
+}
+
+.dcChartInfoText {
+    font-weight: 500;
+    color: #32363a;
+}
+
+/* Statistics Panel */
+.dcStatisticsPanel {
+    background-color: #fafafa;
+    border-radius: 0.25rem;
+}
+
+.dcStatisticsPanel .sapMPanelContent {
+    padding: 0.5rem;
+}
+
+.dcStatBox {
+    padding: 1rem;
+    min-width: 120px;
+    background-color: #ffffff;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 0.25rem;
+}
+
+.dcStatLabel {
+    font-size: 0.75rem;
+    color: #6a6d70;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+/* Empty State */
+.dcEmptyState {
+    padding: 3rem;
+    text-align: center;
+    min-height: 300px;
+}
+
+.dcEmptyStateText {
+    color: #6a6d70;
+    max-width: 300px;
+    line-height: 1.5;
+}
+
+/* VizFrame Customizations */
+.sapVizFrame {
+    border-radius: 0.25rem;
+}
+
+/* Chart Title */
+.dcChartTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #32363a;
+    margin-bottom: 1rem;
+}
+
+/* Toolbar Styling */
+.dcChartToolbar {
+    background-color: transparent;
+}
+
+.dcChartToolbar .sapMSelect {
+    min-width: 150px;
+}
+
+/* Data Point Indicators */
+.dcDataPointNormal {
+    color: #5899DA;
+}
+
+.dcDataPointWarning {
+    color: #f0ab00;
+}
+
+.dcDataPointOutOfSpec {
+    color: #bb0000;
+}
+
+/* Reference Line Legend */
+.dcReferenceLegend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #f7f7f7;
+    border-radius: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.dcReferenceLegendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.dcReferenceLegendLine {
+    width: 20px;
+    height: 2px;
+}
+
+.dcReferenceLegendLine--upper,
+.dcReferenceLegendLine--lower {
+    background-color: #bb0000;
+    border-style: dashed;
+}
+
+.dcReferenceLegendLine--target {
+    background-color: #19A979;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .dcStatBox {
+        min-width: 80px;
+        padding: 0.75rem;
+    }
+    
+    .dcChartInfoBar {
+        flex-wrap: wrap;
+    }
+    
+    .dcEmptyState {
+        padding: 2rem;
+    }
+}
+
+/* Loading State */
+.dcChartLoading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+/* Chart Tooltip Customization */
+.dcChartTooltip {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dcChartTooltipTitle {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #32363a;
+}
+
+.dcChartTooltipValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0854A0;
+}
+
+.dcChartTooltipUnit {
+    font-size: 0.875rem;
+    color: #6a6d70;
+}
+
+/* Panel Header Customization */
+.dcChartContainer .sapMPanelHdr {
+    background-color: transparent;
+}
+
+/* Animation for data updates */
+@keyframes dcDataUpdate {
+    0% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.dcDataUpdated {
+    animation: dcDataUpdate 0.3s ease-in-out;
+}
+
+/* Status Indicators */
+.dcStatusIndicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.dcStatusIndicator--normal {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.dcStatusIndicator--warning {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.dcStatusIndicator--outOfSpec {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+/* Export Button Hover */
+.sapMBtn.dcExportBtn:hover {
+    background-color: #e8f5e9;
+}
+
+/* Refresh Animation */
+@keyframes dcRefreshSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.dcRefreshing .sapUiIcon {
+    animation: dcRefreshSpin 1s linear infinite;
+}
