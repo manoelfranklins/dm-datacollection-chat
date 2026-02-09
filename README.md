@@ -2,11 +2,14 @@
 
 A custom POD (Production Operator Dashboard) plugin extension for SAP Digital Manufacturing that visualizes Data Collection measurements as an interactive chart.
 
-![Data Collection Chart](docs/chart-screenshot.png)
+<img width="1237" height="484" alt="image" src="https://github.com/user-attachments/assets/cebd931b-e7df-4a19-af5e-5475d1106c31" />
+<img width="1238" height="482" alt="image" src="https://github.com/user-attachments/assets/75d8d766-3507-4795-bc9b-1a8074007314" />
+<img width="1240" height="487" alt="image" src="https://github.com/user-attachments/assets/6893adb4-d55d-41fb-8541-6960e5fe29b9" />
+
 
 ## 🎯 Features
 
-- **Multi-Series Line Chart**: Displays multiple data collection parameters (RPM, Temperature, Pressure, etc.) as separate colored lines
+- **Multi-Series Line Chart**: Displays multiple data collection parameters as separate colored lines
 - **Real-time Data**: Automatically loads measurements when an SFC is selected in the POD
 - **Interactive Legend**: Shows parameter names with color coding
 - **Multiple Chart Types**: Switch between Line, Column, and Scatter chart visualizations
@@ -14,13 +17,6 @@ A custom POD (Production Operator Dashboard) plugin extension for SAP Digital Ma
 - **Auto-Refresh**: Updates automatically when SFC or Operation selection changes
 - **Manual Refresh**: Refresh button to reload data on demand
 - **Responsive Design**: Adapts to POD layout sizing
-
-## 📋 Prerequisites
-
-- SAP Digital Manufacturing Cloud subscription
-- Access to POD Designer
-- Custom Plugin development permissions
-- Plant configuration with Data Collection parameters
 
 ## 🚀 Installation
 
@@ -64,20 +60,22 @@ extendDataCollectionWithChart/
 
 ### Step 3: Upload to SAP DM
 
-1. Navigate to **Manage Custom Extensions** in SAP Digital Manufacturing
-2. Click **Create** to add a new custom extension
+1. Navigate to **POD Designer** in SAP Digital Manufacturing
+2. Open **Extensions** tab and click **Create** to add a new custom extension
 3. Upload the ZIP file
 4. Provide the following details:
    - **Extension Name**: Data Collection Chart
    - **Extension ID**: dcchartext
-   - **Namespace**: sap.dm.custom.plugin.dcchartext
-5. Click **Save** and then **Deploy**
+   - **Namespace**: sap.dm.custom.plugin.dcchartext.dcchartext
+5. Click **Save**
+
+<img width="1912" height="708" alt="image" src="https://github.com/user-attachments/assets/50a831ca-e098-4a55-901a-d70c69308ff8" />
 
 ### Step 4: Add to POD Designer
 
 1. Open **POD Designer**
 2. Select or create a POD
-3. In the plugin list, find **"Data Collection Chart"** under View Plugins
+3. In the plugin list, find **"Data Collection Chart"** 
 4. Drag and drop the plugin into your POD layout
 5. Configure the plugin properties as needed
 6. Save and activate the POD
@@ -87,7 +85,7 @@ extendDataCollectionWithChart/
 ### Basic Usage
 
 1. Open the POD containing the Data Collection Chart plugin
-2. Select an SFC from the worklist or scan an SFC
+2. Select an SFC from the worklist
 3. The chart automatically loads and displays measurement data for the selected SFC
 4. Data points are grouped by parameter name (measureName) with different colored lines
 
@@ -277,16 +275,5 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 👨‍💻 Author
 
-Created as a custom POD plugin extension for SAP Digital Manufacturing.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-**Note**: This plugin requires SAP Digital Manufacturing Cloud. Ensure you have the appropriate licenses and permissions before deployment.
+Manoel Costa
+http://manoelcosta.com/
