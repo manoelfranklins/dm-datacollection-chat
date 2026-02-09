@@ -269,11 +269,15 @@ The plugin listens to these POD events:
 - [SAP UI5 VizFrame Documentation](https://sapui5.hana.ondemand.com/#/api/sap.viz.ui5.controls.VizFrame)
 - [SAP DM Extension Samples](https://github.com/SAP-samples/digital-manufacturing-extension-samples)
 
-## 📄 License
+## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
 Manoel Costa
 http://manoelcosta.com/
+
+---
+
+**Disclaimer:** This is a community extension and is not officially supported by SAP. Use at your own discretion.
