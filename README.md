@@ -4,8 +4,6 @@ A custom POD (Production Operator Dashboard) plugin extension for SAP Digital Ma
 
 <img width="1237" height="484" alt="image" src="https://github.com/user-attachments/assets/cebd931b-e7df-4a19-af5e-5475d1106c31" />
 <img width="1238" height="482" alt="image" src="https://github.com/user-attachments/assets/75d8d766-3507-4795-bc9b-1a8074007314" />
-<img width="1240" height="487" alt="image" src="https://github.com/user-attachments/assets/6893adb4-d55d-41fb-8541-6960e5fe29b9" />
-
 
 ## 🎯 Features
 
