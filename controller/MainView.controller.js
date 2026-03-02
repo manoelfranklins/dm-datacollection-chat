@@ -1,10 +1,7 @@
 sap.ui.define([
     "sap/dm/dme/podfoundation/controller/PluginViewController",
-    "sap/ui/model/json/JSONModel",
-    "sap/viz/ui5/controls/VizFrame",
-    "sap/viz/ui5/data/FlattenedDataset",
-    "sap/viz/ui5/controls/common/feeds/FeedItem"
-], function (PluginViewController, JSONModel, VizFrame, FlattenedDataset, FeedItem) {
+    "sap/ui/model/json/JSONModel"
+], function (PluginViewController, JSONModel) {
     "use strict";
 
     return PluginViewController.extend("sap.dm.custom.plugin.dcchartext.dcchartext.controller.MainView", {
@@ -14,27 +11,21 @@ sap.ui.define([
                 PluginViewController.prototype.onInit.apply(this, arguments);
             }
             
-            // Initialize chart model
+            // Initialize chart model with empty data
             this._oChartModel = new JSONModel({
-                dataPoints: [],
-                parameterName: "Select an SFC/Operation",
-                hasData: false,
-                loading: false
+                dataPoints: []
             });
+            this._oChartModel.setSizeLimit(10000);
             this.getView().setModel(this._oChartModel, "chartModel");
             
-            // Subscribe to data collection events
+            // Store for all data
+            this._allDataPoints = [];
+            
             this._subscribeToEvents();
         },
 
-        onBeforeRenderingPlugin: function () {
-            // Called before plugin renders
-        },
-
         onAfterRendering: function () {
-            // Initialize chart after rendering
             this._initChart();
-            // Try to load data from current selection, otherwise show sample
             this._loadFromCurrentSelection();
         },
 
@@ -46,34 +37,17 @@ sap.ui.define([
         },
 
         _subscribeToEvents: function () {
-            // Subscribe to POD events
             this.subscribe("PodSelectionChangeEvent", this._onSelectionChange, this);
-            this.subscribe("OperationListSelectEvent", this._onOperationSelected, this);
-            this.subscribe("WorklistSelectEvent", this._onWorklistSelect, this);
-            this.subscribe("OperationChangeEvent", this._onOperationSelected, this);
-            
-            console.log("DC Chart Plugin: Subscribed to events");
+            this.subscribe("WorklistSelectEvent", this._onSelectionChange, this);
+            console.log("DC Chart: Events subscribed");
         },
 
         _unsubscribeFromEvents: function () {
             this.unsubscribe("PodSelectionChangeEvent", this._onSelectionChange, this);
-            this.unsubscribe("OperationListSelectEvent", this._onOperationSelected, this);
-            this.unsubscribe("WorklistSelectEvent", this._onWorklistSelect, this);
-            this.unsubscribe("OperationChangeEvent", this._onOperationSelected, this);
+            this.unsubscribe("WorklistSelectEvent", this._onSelectionChange, this);
         },
 
-        _onSelectionChange: function (oEvent) {
-            console.log("DC Chart Plugin: Selection changed", oEvent);
-            this._loadFromCurrentSelection();
-        },
-
-        _onWorklistSelect: function (oEvent) {
-            console.log("DC Chart Plugin: Worklist selected", oEvent);
-            this._loadFromCurrentSelection();
-        },
-
-        _onOperationSelected: function (oEvent) {
-            console.log("DC Chart Plugin: Operation selected", oEvent);
+        _onSelectionChange: function () {
             this._loadFromCurrentSelection();
         },
 
@@ -82,38 +56,14 @@ sap.ui.define([
             if (oVizFrame) {
                 oVizFrame.setVizProperties({
                     plotArea: {
-                        dataLabel: { visible: true },
-                        colorPalette: ["#5899DA", "#E8743B", "#19A979", "#ED4A7B", "#945ECF", "#13A4B4"],
-                        line: {
-                            visible: true,
-                            width: 2
-                        },
-                        marker: {
-                            visible: true,
-                            size: 6
-                        }
+                        colorPalette: ["#5899DA", "#E8743B", "#19A979", "#ED4A7B", "#945ECF"],
+                        line: { width: 2 },
+                        marker: { visible: true, size: 6 },
+                        dataLabel: { visible: false }
                     },
-                    valueAxis: {
-                        title: { visible: true, text: "Value" }
-                    },
-                    categoryAxis: {
-                        title: { visible: true, text: "Date Created" }
-                    },
-                    title: {
-                        visible: true,
-                        text: "Data Collection Values"
-                    },
-                    legend: { 
-                        visible: true,
-                        title: { visible: true, text: "Parameters" }
-                    },
-                    interaction: {
-                        selectability: {
-                            mode: "EXCLUSIVE"
-                        }
-                    }
+                    title: { visible: true, text: "Data Collection" },
+                    legend: { visible: true }
                 });
-                console.log("DC Chart Plugin: Chart initialized");
             }
         },
 
@@ -121,304 +71,215 @@ sap.ui.define([
             try {
                 var oPodSelectionModel = this.getPodSelectionModel();
                 if (!oPodSelectionModel) {
-                    console.log("DC Chart Plugin: No pod selection model");
                     this._showSampleData();
                     return;
                 }
                 
                 var oSelection = oPodSelectionModel.getSelection();
-                console.log("DC Chart Plugin: Current selection", oSelection);
-                
                 var sSfc = null;
-                var sOperation = null;
                 
-                // Extract SFC string - handle various formats
                 if (oSelection) {
-                    if (oSelection.sfc && typeof oSelection.sfc === "object" && oSelection.sfc.sfc) {
+                    if (oSelection.sfc && oSelection.sfc.sfc) {
                         sSfc = oSelection.sfc.sfc;
-                    } else if (oSelection.sfc && typeof oSelection.sfc === "string") {
-                        sSfc = oSelection.sfc;
                     } else if (oSelection.input) {
                         sSfc = oSelection.input;
-                    } else if (oSelection.sfcData && oSelection.sfcData.length > 0) {
-                        var oSfcData = oSelection.sfcData[0];
-                        if (typeof oSfcData.sfc === "object" && oSfcData.sfc.sfc) {
-                            sSfc = oSfcData.sfc.sfc;
-                        } else if (typeof oSfcData.sfc === "string") {
-                            sSfc = oSfcData.sfc;
-                        }
-                        sOperation = oSfcData.operation;
-                    }
-                    
-                    if (!sOperation && oSelection.operation) {
-                        if (typeof oSelection.operation === "object" && oSelection.operation.operation) {
-                            sOperation = oSelection.operation.operation;
-                        } else if (typeof oSelection.operation === "string") {
-                            sOperation = oSelection.operation;
-                        }
                     }
                 }
                 
-                console.log("DC Chart Plugin: Extracted SFC:", sSfc, "Operation:", sOperation);
+                console.log("DC Chart: SFC =", sSfc);
                 
                 if (sSfc) {
-                    this._loadMeasurements(sSfc, sOperation);
+                    this._loadMeasurements(sSfc);
                 } else {
-                    console.log("DC Chart Plugin: No SFC found");
                     this._showSampleData();
                 }
             } catch (e) {
-                console.log("DC Chart Plugin: Error getting selection", e);
+                console.log("DC Chart: Error", e);
                 this._showSampleData();
             }
         },
 
-        _loadMeasurements: function (sSfc, sOperation) {
-            console.log("DC Chart Plugin: Loading measurements for SFC:", sSfc, "Operation:", sOperation);
+        _loadMeasurements: function (sSfc) {
+            var sPlant = this.getPodController().getUserPlant();
+            var oEndDate = new Date();
+            var oStartDate = new Date();
+            oStartDate.setDate(oStartDate.getDate() - 30);
             
-            this._oChartModel.setProperty("/loading", true);
-            this._oChartModel.setProperty("/parameterName", "Loading...");
+            var sUrl = this.getPublicApiRestDataSourceUri() + "/datacollection/v1/measurements";
+            sUrl += "?plant=" + encodeURIComponent(sPlant);
+            sUrl += "&sfc=" + encodeURIComponent(sSfc);
+            sUrl += "&startDateTime=" + encodeURIComponent(oStartDate.toISOString().split('.')[0] + "Z");
+            sUrl += "&endDateTime=" + encodeURIComponent(oEndDate.toISOString().split('.')[0] + "Z");
+            sUrl += "&size=100&page=0";
             
-            // Store SFC for filtering
+            console.log("DC Chart: Loading", sUrl);
+            
+            var that = this;
             this._currentSfc = sSfc;
+            this._allMeasurements = [];
             
-            try {
+            this.ajaxGetRequest(sUrl, null,
+                function (oResponse) {
+                    that._handleResponse(oResponse, sSfc, 0);
+                },
+                function (oError) {
+                    console.log("DC Chart: API Error", oError);
+                    that._showSampleData();
+                }
+            );
+        },
+
+        _handleResponse: function (oResponse, sSfc, iPage) {
+            var aData = (oResponse && oResponse.data) ? oResponse.data : [];
+            this._allMeasurements = this._allMeasurements.concat(aData);
+            
+            var iTotalPages = oResponse.numberOfPages || 1;
+            var iNextPage = iPage + 1;
+            
+            console.log("DC Chart: Page", iPage, "loaded,", aData.length, "items. Total:", this._allMeasurements.length);
+            
+            if (iNextPage < iTotalPages && aData.length > 0) {
+                // Load next page
                 var sPlant = this.getPodController().getUserPlant();
-                
-                var sUrl = this.getPublicApiRestDataSourceUri() + "/datacollection/v1/measurements";
-                sUrl += "?plant=" + encodeURIComponent(sPlant);
-                
-                // Try both sfc and sfcs parameters for better API compatibility
-                sUrl += "&sfc=" + encodeURIComponent(sSfc);
-                sUrl += "&sfcs=" + encodeURIComponent(sSfc);
-                
-                // Add date range - last 30 days
                 var oEndDate = new Date();
                 var oStartDate = new Date();
                 oStartDate.setDate(oStartDate.getDate() - 30);
                 
-                var sStartDateTime = oStartDate.toISOString().split('.')[0] + "Z";
-                var sEndDateTime = oEndDate.toISOString().split('.')[0] + "Z";
-                
-                sUrl += "&startDateTime=" + encodeURIComponent(sStartDateTime);
-                sUrl += "&endDateTime=" + encodeURIComponent(sEndDateTime);
-                
-                // Get more results
-                sUrl += "&size=100";
-                
-                if (sOperation) {
-                    sUrl += "&operation=" + encodeURIComponent(sOperation);
-                }
-                
-                console.log("DC Chart Plugin: API URL:", sUrl);
-                console.log("DC Chart Plugin: Filtering for SFC:", sSfc);
+                var sUrl = this.getPublicApiRestDataSourceUri() + "/datacollection/v1/measurements";
+                sUrl += "?plant=" + encodeURIComponent(sPlant);
+                sUrl += "&sfc=" + encodeURIComponent(sSfc);
+                sUrl += "&startDateTime=" + encodeURIComponent(oStartDate.toISOString().split('.')[0] + "Z");
+                sUrl += "&endDateTime=" + encodeURIComponent(oEndDate.toISOString().split('.')[0] + "Z");
+                sUrl += "&size=100&page=" + iNextPage;
                 
                 var that = this;
                 this.ajaxGetRequest(sUrl, null,
-                    function (oResponse) {
-                        console.log("DC Chart Plugin: API Response", oResponse);
-                        that._processMeasurements(oResponse, sSfc);
+                    function (oResp) {
+                        that._handleResponse(oResp, sSfc, iNextPage);
                     },
-                    function (oError) {
-                        console.log("DC Chart Plugin: API Error", oError);
-                        that._showSampleData();
+                    function () {
+                        that._processAndDisplay(sSfc);
                     }
                 );
-            } catch (e) {
-                console.log("DC Chart Plugin: Error calling API", e);
-                this._showSampleData();
+            } else {
+                this._processAndDisplay(sSfc);
             }
         },
 
-        _processMeasurements: function (oResponse, sSfc) {
-            this._oChartModel.setProperty("/loading", false);
+        _processAndDisplay: function (sSfc) {
+            console.log("DC Chart: Processing", this._allMeasurements.length, "measurements");
             
-            // Handle response
-            var aMeasurements = [];
-            if (Array.isArray(oResponse)) {
-                aMeasurements = oResponse;
-            } else if (oResponse && oResponse.data && Array.isArray(oResponse.data)) {
-                aMeasurements = oResponse.data;
-            } else if (oResponse && oResponse.value) {
-                aMeasurements = oResponse.value;
-            }
+            var aChartData = [];
+            var oParamsSet = {};
             
-            console.log("DC Chart Plugin: Processing", aMeasurements.length, "measurements");
-            if (aMeasurements.length > 0) {
-                console.log("DC Chart Plugin: First measurement:", JSON.stringify(aMeasurements[0]));
-            }
-            
-            if (aMeasurements.length === 0) {
-                this._showSampleData();
-                return;
-            }
-            
-            // Group by parameter name and extract data
-            var oGroupedData = {};
-            var aAllParameters = [];
-            
-            aMeasurements.forEach(function (oMeasurement, iIndex) {
-                // Filter by selected SFC - only process measurements for this SFC
-                var sMeasurementSfc = oMeasurement.sfc || "";
-                if (sMeasurementSfc && sMeasurementSfc !== sSfc) {
-                    console.log("DC Chart Plugin: Skipping measurement for different SFC:", sMeasurementSfc);
-                    return; // Skip this measurement
+            this._allMeasurements.forEach(function (oMeasurement, idx) {
+                var oParam = oMeasurement.parameter || {};
+                
+                var sMeasureName = oParam.measureName || "Value";
+                var sActual = oParam.actual;
+                var sDateCreated = oParam.dateCreated;
+                
+                oParamsSet[sMeasureName] = true;
+                
+                var nValue = parseFloat(sActual) || 0;
+                var sDisplayTime = "Point " + (idx + 1);
+                var nSortKey = idx;
+                
+                if (sDateCreated) {
+                    var oDate = new Date(sDateCreated);
+                    nSortKey = oDate.getTime();
+                    sDisplayTime = (oDate.getMonth() + 1) + "/" + oDate.getDate() + " " + 
+                                   oDate.getHours() + ":" + String(oDate.getMinutes()).padStart(2, '0');
                 }
                 
-                var oParam = oMeasurement.parameter || oMeasurement;
-                
-                // Get parameter/measure name
-                var sMeasureName = oParam.measureName || oParam.parameterName || 
-                                  oParam.dcParameterName || oParam.name || 
-                                  oMeasurement.measureName || "Unknown";
-                
-                // Get timestamp - prefer dateCreated/createdDateTime
-                var sDateTime = oMeasurement.dateCreated || oMeasurement.createdDateTime ||
-                               oMeasurement.measuredAt || oMeasurement.collectedAt ||
-                               oParam.dateCreated || oParam.createdDateTime ||
-                               oParam.measuredAt || oParam.collectedAt;
-                
-                // Get value
-                var nValue = 0;
-                if (oParam.actual !== undefined && oParam.actual !== null) {
-                    nValue = parseFloat(oParam.actual);
-                } else if (oParam.measureValue !== undefined) {
-                    nValue = parseFloat(oParam.measureValue);
-                } else if (oParam.measuredValue !== undefined) {
-                    nValue = parseFloat(oParam.measuredValue);
-                } else if (oParam.value !== undefined) {
-                    nValue = parseFloat(oParam.value);
-                } else if (oMeasurement.actual !== undefined) {
-                    nValue = parseFloat(oMeasurement.actual);
-                }
-                
-                // Format DateTime from dateCreated
-                var sDisplayTime;
-                var oDate;
-                if (sDateTime) {
-                    oDate = new Date(sDateTime);
-                    // Format as short date + time
-                    sDisplayTime = oDate.toLocaleDateString() + " " + oDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                } else {
-                    oDate = new Date();
-                    sDisplayTime = "Point " + (iIndex + 1);
-                }
-                
-                // Track unique parameters
-                if (aAllParameters.indexOf(sMeasureName) === -1) {
-                    aAllParameters.push(sMeasureName);
-                }
-                
-                // Group by datetime for multi-series chart
-                if (!oGroupedData[sDisplayTime]) {
-                    oGroupedData[sDisplayTime] = {
-                        DateTime: sDisplayTime,
-                        DateTimeRaw: oDate ? oDate.getTime() : iIndex
-                    };
-                }
-                oGroupedData[sDisplayTime][sMeasureName] = nValue;
-            });
-            
-            // Convert to array and sort by datetime
-            var aChartData = Object.values(oGroupedData);
-            aChartData.sort(function(a, b) {
-                return a.DateTimeRaw - b.DateTimeRaw;
-            });
-            
-            console.log("DC Chart Plugin: Parameters found:", aAllParameters);
-            console.log("DC Chart Plugin: Chart data points:", aChartData.length);
-            
-            // Check if we have data after filtering
-            if (aChartData.length === 0 || aAllParameters.length === 0) {
-                console.log("DC Chart Plugin: No data for selected SFC after filtering");
-                this._showSampleData();
-                return;
-            }
-            
-            // Update model
-            this._oChartModel.setProperty("/dataPoints", aChartData);
-            this._oChartModel.setProperty("/parameters", aAllParameters);
-            this._oChartModel.setProperty("/parameterName", "SFC: " + sSfc);
-            this._oChartModel.setProperty("/hasData", aChartData.length > 0);
-            
-            // Rebuild chart with dynamic measures
-            this._rebuildChart(aAllParameters, sSfc, aChartData.length);
-        },
-
-        _rebuildChart: function (aParameters, sSfc, iCount) {
-            var oVizFrame = this.byId("dcVizFrame");
-            if (!oVizFrame) return;
-            
-            // Remove existing feeds
-            oVizFrame.destroyFeeds();
-            
-            // Create measure feed with all parameters
-            var oMeasureFeed = new FeedItem({
-                uid: "valueAxis",
-                type: "Measure",
-                values: aParameters
-            });
-            
-            // Create dimension feed for datetime
-            var oDimensionFeed = new FeedItem({
-                uid: "categoryAxis",
-                type: "Dimension",
-                values: ["DateTime"]
-            });
-            
-            // Add color feed for legend
-            var oColorFeed = new FeedItem({
-                uid: "color",
-                type: "Dimension",
-                values: []
-            });
-            
-            oVizFrame.addFeed(oMeasureFeed);
-            oVizFrame.addFeed(oDimensionFeed);
-            
-            // Update dataset with dynamic measures
-            var oDataset = oVizFrame.getDataset();
-            if (oDataset) {
-                // Clear existing measures
-                oDataset.destroyMeasures();
-                
-                // Add measure for each parameter
-                aParameters.forEach(function(sParam) {
-                    oDataset.addMeasure(new sap.viz.ui5.data.MeasureDefinition({
-                        name: sParam,
-                        value: "{chartModel>" + sParam + "}"
-                    }));
+                aChartData.push({
+                    DateTime: sDisplayTime,
+                    Value: nValue,
+                    ParameterName: sMeasureName,
+                    SortKey: nSortKey
                 });
+            });
+            
+            // Sort by time
+            aChartData.sort(function(a, b) { return a.SortKey - b.SortKey; });
+            
+            var aParams = Object.keys(oParamsSet).sort();
+            console.log("DC Chart: Parameters:", aParams, "Data points:", aChartData.length);
+            
+            // Store all data
+            this._allDataPoints = aChartData;
+            
+            // Update parameter dropdown
+            this._updateParameterDropdown(aParams);
+            
+            // Log first few data points for debugging
+            console.log("DC Chart: First 3 data points:", JSON.stringify(aChartData.slice(0, 3)));
+            
+            // Set data to model
+            this._oChartModel.setProperty("/dataPoints", aChartData);
+            
+            // Force model refresh
+            this._oChartModel.refresh(true);
+            
+            // Update title and rebind dataset
+            var oVizFrame = this.byId("dcVizFrame");
+            if (oVizFrame) {
+                oVizFrame.setVizProperties({
+                    title: { text: "SFC: " + sSfc + " (" + aChartData.length + " points)" }
+                });
+                
+                // Get the dataset and rebind it to force refresh
+                var oDataset = oVizFrame.getDataset();
+                if (oDataset) {
+                    oDataset.bindData("chartModel>/dataPoints");
+                    console.log("DC Chart: Dataset rebound");
+                }
             }
             
-            // Update title
-            oVizFrame.setVizProperties({
-                title: { 
-                    visible: true, 
-                    text: "SFC: " + sSfc + " (" + iCount + " data points, " + aParameters.length + " parameters)" 
-                },
-                legend: {
-                    visible: aParameters.length > 1,
-                    title: { visible: true, text: "Parameters" }
-                }
-            });
+            console.log("DC Chart: Model updated with", aChartData.length, "points");
+            console.log("DC Chart: Model data check:", this._oChartModel.getProperty("/dataPoints").length);
+        },
+
+        _updateParameterDropdown: function (aParams) {
+            var oSelect = this.byId("parameterSelect");
+            if (oSelect) {
+                oSelect.removeAllItems();
+                oSelect.addItem(new sap.ui.core.Item({ key: "ALL", text: "All (" + this._allDataPoints.length + ")" }));
+                aParams.forEach(function(sParam) {
+                    var iCount = this._allDataPoints.filter(function(d) { return d.ParameterName === sParam; }).length;
+                    oSelect.addItem(new sap.ui.core.Item({ key: sParam, text: sParam + " (" + iCount + ")" }));
+                }.bind(this));
+                oSelect.setSelectedKey("ALL");
+            }
         },
 
         _showSampleData: function () {
-            this._oChartModel.setProperty("/loading", false);
             var aSampleData = [
-                { DateTime: "10:00", RPM: 100, Temperature: 25 },
-                { DateTime: "10:15", RPM: 120, Temperature: 28 },
-                { DateTime: "10:30", RPM: 110, Temperature: 26 },
-                { DateTime: "10:45", RPM: 130, Temperature: 30 },
-                { DateTime: "11:00", RPM: 115, Temperature: 27 }
+                { DateTime: "10:00", Value: 100, ParameterName: "RPM" },
+                { DateTime: "10:00", Value: 25, ParameterName: "Temp" },
+                { DateTime: "10:15", Value: 120, ParameterName: "RPM" },
+                { DateTime: "10:15", Value: 28, ParameterName: "Temp" },
+                { DateTime: "10:30", Value: 110, ParameterName: "RPM" },
+                { DateTime: "10:30", Value: 26, ParameterName: "Temp" },
+                { DateTime: "10:45", Value: 130, ParameterName: "RPM" },
+                { DateTime: "10:45", Value: 30, ParameterName: "Temp" }
             ];
-            this._oChartModel.setProperty("/dataPoints", aSampleData);
-            this._oChartModel.setProperty("/parameters", ["RPM", "Temperature"]);
-            this._oChartModel.setProperty("/parameterName", "Sample Data");
-            this._oChartModel.setProperty("/hasData", true);
             
-            this._rebuildChart(["RPM", "Temperature"], "Sample", 5);
+            this._allDataPoints = aSampleData;
+            this._oChartModel.setProperty("/dataPoints", aSampleData);
+            this._updateParameterDropdown(["RPM", "Temp"]);
+            
+            var oVizFrame = this.byId("dcVizFrame");
+            if (oVizFrame) {
+                oVizFrame.setVizProperties({ title: { text: "Sample Data" } });
+            }
+        },
+
+        onParameterChange: function (oEvent) {
+            var sKey = oEvent.getParameter("selectedItem").getKey();
+            var aFiltered = sKey === "ALL" ? this._allDataPoints : 
+                           this._allDataPoints.filter(function(d) { return d.ParameterName === sKey; });
+            this._oChartModel.setProperty("/dataPoints", aFiltered);
         },
 
         onRefreshPress: function () {
