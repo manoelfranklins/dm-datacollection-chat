@@ -11,12 +11,13 @@ A custom POD (Production Operator Dashboard) plugin extension for SAP Digital Ma
 
 - **Multi-Series Line Chart**: Displays multiple data collection parameters as separate colored lines
 - **Real-time Data**: Automatically loads measurements when an SFC is selected in the POD
+- **Pagination Support**: Automatically fetches all pages of data from the API
+- **Parameter Filter**: Dropdown to filter by specific parameter or view all
 - **Interactive Legend**: Shows parameter names with color coding
-- **Multiple Chart Types**: Switch between Line, Column, and Scatter chart visualizations
-- **Date/Time X-Axis**: Shows measurement timestamps (dateCreated) on the X-axis
-- **Auto-Refresh**: Updates automatically when SFC or Operation selection changes
+- **Multiple Chart Types**: Switch between Line and Column chart visualizations
+- **Date/Time X-Axis**: Shows measurement timestamps on the X-axis
+- **Auto-Refresh**: Updates automatically when SFC selection changes
 - **Manual Refresh**: Refresh button to reload data on demand
-- **Responsive Design**: Adapts to POD layout sizing
 
 ## 🚀 Installation
 
@@ -25,7 +26,7 @@ A custom POD (Production Operator Dashboard) plugin extension for SAP Digital Ma
 Clone or download this repository:
 
 ```bash
-git clone https://github.com/AnttonLA/extendDataCollectionWithChart.git
+git clone https://github.com/manoelfranklins/dm-datacollection-chat.git
 ```
 
 ### Step 2: Create ZIP Package
@@ -93,9 +94,10 @@ extendDataCollectionWithChart/
 
 | Control | Description |
 |---------|-------------|
-| **Chart Type Dropdown** | Switch between Line, Column, and Scatter visualizations |
+| **Parameter Filter** | Filter data by specific parameter or "All" |
+| **Chart Type Dropdown** | Switch between Line and Column visualizations |
 | **Refresh Button** | Manually reload measurement data |
-| **Legend** | Click to show/hide specific parameters |
+| **Legend** | Shows parameters with color coding |
 
 ### Supported POD Types
 
@@ -129,8 +131,10 @@ GET /datacollection/v1/measurements
 - `sfc` - Selected SFC number
 - `startDateTime` - Start of date range (30 days ago)
 - `endDateTime` - End of date range (now)
-- `size` - Number of results (100)
-- `operation` - Operation filter (if selected)
+- `size` - Number of results per page (100)
+- `page` - Page number for pagination
+
+**Note:** The API has a 30-day maximum date range limit. The plugin automatically handles pagination to fetch all available data.
 
 ## 📁 File Structure
 
@@ -166,26 +170,26 @@ The plugin expects the following response structure from the Data Collection API
 
 ```json
 {
-  "numberOfPages": 5,
-  "count": 97,
+  "numberOfPages": 17,
+  "count": 340,
   "currentPage": 0,
   "data": [
     {
       "plant": "1710",
-      "sfc": "171010283",
-      "dateCreated": "2026-02-09T10:30:00Z",
+      "sfc": "171010510",
       "parameter": {
         "measureName": "RPM",
-        "actual": 222
+        "actual": "250",
+        "dateCreated": "2026-02-09T10:30:00.000+00:00"
       }
     },
     {
       "plant": "1710",
-      "sfc": "171010283",
-      "dateCreated": "2026-02-09T10:30:00Z",
+      "sfc": "171010510",
       "parameter": {
-        "measureName": "Temperature",
-        "actual": 35
+        "measureName": "TEMPERATURE",
+        "actual": "35",
+        "dateCreated": "2026-02-09T10:30:00.000+00:00"
       }
     }
   ]
@@ -199,16 +203,16 @@ The plugin expects the following response structure from the Data Collection API
 Modify the color palette in `MainView.controller.js`:
 
 ```javascript
-colorPalette: ["#5899DA", "#E8743B", "#19A979", "#ED4A7B", "#945ECF", "#13A4B4"]
+colorPalette: ["#5899DA", "#E8743B", "#19A979", "#ED4A7B", "#945ECF"]
 ```
 
 ### Date Range
 
-Adjust the default date range for data retrieval:
+Adjust the default date range for data retrieval (maximum 30 days due to API limit):
 
 ```javascript
 // In _loadMeasurements function
-oStartDate.setDate(oStartDate.getDate() - 30);  // Change 30 to desired days
+oStartDate.setDate(oStartDate.getDate() - 30);  // 30 days is the maximum
 ```
 
 ### Chart Properties
@@ -218,11 +222,12 @@ Customize chart appearance in `_initChart` function:
 ```javascript
 oVizFrame.setVizProperties({
     plotArea: {
-        dataLabel: { visible: true },
-        line: { visible: true, width: 2 },
-        marker: { visible: true, size: 6 }
+        line: { width: 2 },
+        marker: { visible: true, size: 6 },
+        dataLabel: { visible: false }
     },
-    // ... other properties
+    title: { visible: true },
+    legend: { visible: true }
 });
 ```
 
@@ -238,12 +243,14 @@ oVizFrame.setVizProperties({
 
 - Verify timestamp format is `YYYY-MM-DDThh:mm:ssZ`
 - Check that plant ID is correctly detected
+- Ensure date range does not exceed 30 days
 - Ensure SFC exists in the system
 
-### No lines between points
+### No data displayed despite API returning data
 
-- Verify `line.visible: true` is set in vizProperties
-- Check that data points have valid numeric values
+- Check browser console for "DC Chart:" log messages
+- Verify data structure matches expected format
+- Check that `parameter.measureName`, `parameter.actual`, and `parameter.dateCreated` exist
 
 ### Plugin not appearing in POD Designer
 
@@ -258,9 +265,7 @@ The plugin listens to these POD events:
 | Event | Description |
 |-------|-------------|
 | `PodSelectionChangeEvent` | Triggered when POD selection changes |
-| `OperationListSelectEvent` | Triggered when operation is selected |
 | `WorklistSelectEvent` | Triggered when worklist item is selected |
-| `OperationChangeEvent` | Triggered when operation changes |
 
 ## 🔗 Related Resources
 
